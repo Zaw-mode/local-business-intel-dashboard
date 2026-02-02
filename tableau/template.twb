@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!--
+  Minimal Tableau Workbook template.
+  Open in Tableau Desktop, then Edit Data Source to point to your local CSVs under output/.
+  Tableau Public typically publishes extracts; automatic refresh from local files is not available.
+-->
+<workbook source-platform='win' version='2024.1'>
+  <document-format-change-manifest></document-format-change-manifest>
+  <preferences></preferences>
+  <datasources>
+    <datasource name='competitors' hasconnection='true' inline='true'>
+      <connection class='textscan' dbname='output\\competitors.csv' separator=',' textscan='true' />
+      <relation name='competitors.csv' table='[competitors.csv]' type='textscan'/>
+    </datasource>
+  </datasources>
+  <worksheets></worksheets>
+  <dashboards></dashboards>
+</workbook>

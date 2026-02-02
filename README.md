@@ -47,7 +47,17 @@ pip install -r requirements.txt
 
 ## Run (example)
 
-Austin coffee shops, 10 mile radius around downtown:
+### Option 1 — simplest: keyword + area (no lat/lng)
+
+```bash
+python -m src.run \
+  --keyword "coffee shop" \
+  --area "Austin, TX" \
+  --radius-m 16093 \
+  --limit 30
+```
+
+### Option 2 — lat/lng
 
 ```bash
 python -m src.run \
@@ -55,6 +65,14 @@ python -m src.run \
   --lat 30.2672 --lng -97.7431 \
   --radius-m 16093 \
   --limit 30
+```
+
+### Optional enrichment (Brave Search)
+
+Set `BRAVE_API_KEY` then run with:
+
+```bash
+python -m src.run --keyword "coffee shop" --area "Austin, TX" --radius-m 16093 --limit 30 --enrich-brave
 ```
 
 This writes:

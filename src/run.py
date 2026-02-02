@@ -11,15 +11,24 @@ from .places_client import PlacesClient, polite_sleep
 from .storage import connect
 from .text_analytics import extract_themes
 from .scoring import competitor_score
+from .geocode import geocode_nominatim
+from .brave_enrich import brave_search
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--keyword", required=True)
-    ap.add_argument("--lat", type=float, required=True)
-    ap.add_argument("--lng", type=float, required=True)
-    ap.add_argument("--radius-m", type=int, required=True)
+    ap.add_argument("--keyword", required=True, help="Business category/keyword (e.g. 'coffee shop')")
+
+    # Option A: direct lat/lng
+    ap.add_argument("--lat", type=float, help="Latitude")
+    ap.add_argument("--lng", type=float, help="Longitude")
+
+    # Option B: area string
+    ap.add_argument("--area", help="Area string to geocode (e.g. 'Austin, TX' or '78617')")
+
+    ap.add_argument("--radius-m", type=int, required=True, help="Search radius in meters")
     ap.add_argument("--limit", type=int, default=20)
+    ap.add_argument("--enrich-brave", action="store_true", help="Optional: enrich each place with a Brave Search snippet (requires BRAVE_API_KEY)")
     args = ap.parse_args()
 
     root = Path(__file__).resolve().parents[1]
@@ -27,17 +36,26 @@ def main():
     out_dir = root / "output"
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # Resolve center point
+    if args.area and (args.lat is None or args.lng is None):
+        gp = geocode_nominatim(args.area)
+        lat, lng = gp.lat, gp.lng
+    elif args.lat is not None and args.lng is not None:
+        lat, lng = args.lat, args.lng
+    else:
+        raise SystemExit("Provide either (--lat and --lng) OR --area")
+
     client = PlacesClient()
     con = connect(db_path)
 
     run_ts = datetime.now().isoformat(timespec="seconds")
     con.execute(
         "INSERT INTO runs(created_at, keyword, lat, lng, radius_m, limit_n) VALUES (?,?,?,?,?,?)",
-        (run_ts, args.keyword, args.lat, args.lng, args.radius_m, args.limit),
+        (run_ts, args.keyword, lat, lng, args.radius_m, args.limit),
     )
     con.commit()
 
-    places = client.search_text(args.keyword, args.lat, args.lng, args.radius_m, limit=args.limit)
+    places = client.search_text(args.keyword, lat, lng, args.radius_m, limit=args.limit)
 
     all_places = []
     all_reviews = []
@@ -107,6 +125,14 @@ def main():
 
         con.commit()
         score = competitor_score(rating, urc)
+
+        enrich = []
+        if args.enrich_brave and name:
+            try:
+                enrich = brave_search(f"{name} {address or ''}", count=2)
+            except Exception:
+                enrich = []
+
         all_places.append({
             "place_id": pid,
             "name": name,
@@ -117,6 +143,8 @@ def main():
             "user_rating_count": urc,
             "score": score,
             "types": types,
+            "brave_top_result_url": (enrich[0].get("url") if enrich else None),
+            "brave_top_result_title": (enrich[0].get("title") if enrich else None),
         })
 
         for r in reviews:
