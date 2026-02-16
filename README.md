@@ -81,7 +81,7 @@ ACJI **never hardcodes secrets** in source code.
 │       │   ├── foursquare.py
 │       │   ├── nominatim.py
 │       │   ├── overpass.py
-│       │   └── deprecated_paid_client.py
+│       │   └── paid_source_compat.py
 │       ├── config.py
 │       ├── constants.py
 │       ├── etl/
