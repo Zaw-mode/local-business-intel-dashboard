@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  acji-dashboard:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8501:8501"
+    command: ["streamlit", "run", "dashboard/app.py", "--server.address", "0.0.0.0"]

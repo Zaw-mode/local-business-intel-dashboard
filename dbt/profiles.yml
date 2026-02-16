@@ -1,0 +1,7 @@
+acji:
+  target: "{{ env_var('DBT_TARGET', 'dev') }}"
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', './data/warehouse/acji.duckdb') }}"
+      threads: 4

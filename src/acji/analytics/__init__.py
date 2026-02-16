@@ -1,0 +1,1 @@
+"""Analytics SQL materialization utilities."""

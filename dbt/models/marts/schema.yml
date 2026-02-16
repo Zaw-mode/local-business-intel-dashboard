@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: stg_shops
+    columns:
+      - name: shop_id
+        tests: [not_null, unique]
+      - name: name
+        tests: [not_null]
+      - name: latitude
+        tests: [not_null]
+      - name: longitude
+        tests: [not_null]
+
+  - name: cheapest_shops
+    columns:
+      - name: cheap_rank
+        tests: [not_null]
+
+  - name: market_opportunity
+    columns:
+      - name: opportunity_score
+        tests: [not_null]
+
+  - name: shop_features
+    columns:
+      - name: overall_score
+        tests: [not_null]
